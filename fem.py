@@ -2,8 +2,9 @@ import numpy as np
 import torch
 from torch import nn
 from torch_geometric.data import Data
+import matplotlib.pyplot as plt
 
-def generate_dataset(hx, x, f, u0=None, uL=None):
+def solve_fem_1D(hx, x, f, u0=None, uL=None):
     """
     Génère un dataset pour l'équation stationnaire d²u/dx² = f(x) avec des conditions de Dirichlet.
 
@@ -47,20 +48,22 @@ def generate_dataset(hx, x, f, u0=None, uL=None):
 
 
     # Conversion en tenseurs PyTorch
-    x_torch = torch.tensor(x, dtype=torch.float32)
-    f_torch = torch.tensor(f, dtype=torch.float32)
     u_torch = torch.tensor(U, dtype=torch.float32)
 
-    return x_torch, f_torch, u_torch
+    return u_torch
 
-# Fonction pour générer un dataset et le convertir en objets Data de PyTorch Geometric
-def create_data_object(hx, x, f, u0=None, uL=None):
-    x_torch, f_torch, u_torch = generate_dataset(hx, x, f, u0, uL)
-    
-    # Création de edge_index pour une structure linéaire 1D (connexions entre points voisins)
-    edge_index = torch.tensor([[i, i + 1] for i in range(len(x_torch) - 1)] + 
-                              [[i + 1, i] for i in range(len(x_torch) - 1)], dtype=torch.long).t()
-    
-    # Création de l'objet Data
-    data = Data(x=f_torch.unsqueeze(1), y=u_torch, edge_index=edge_index)
-    return data
+
+def plot_fem_results(fem_solution):
+  fem_solution = fem_solution.numpy()
+
+  # Création du gradient de couleur en fonction de u_data
+  plt.figure(figsize=(10, 2))
+  plt.imshow(fem_solution.reshape(1, -1), cmap='hot', aspect='auto')
+
+  # Ajouter une bordure noire autour du rectangle
+  ax = plt.gca()
+
+  plt.colorbar(label="Amplitude de u(x)")  # Affiche la barre de couleur
+  plt.axis('off')  # Masque les axes pour une apparence épurée
+  plt.title("Gradient de couleur représentant les valeurs de u(x)")
+  plt.show()
